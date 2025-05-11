@@ -1,7 +1,7 @@
 name: VPC Deployment
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
@@ -10,7 +10,6 @@ env:
   AWS_ACCOUNT_ID: 110013012092
   AWS_ROLE_NAME: GitHubAction-AssumeRoleWithAction
   AWS_ROLE_SESSION_NAME: GitHub_to_AWS_via_FederatedOIDC
-  AWS_ROLE_ARN: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:${{ env.AWS_ROLE_NAME }}
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -26,7 +25,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.2.0
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE_NAME }}
           role-session-name: ${{ env.AWS_ROLE_SESSION_NAME }}
           aws-region: ${{ env.AWS_REGION }}
 
