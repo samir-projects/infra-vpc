@@ -44,4 +44,4 @@ jobs:
         run: terraform apply -var="username=$(whoami)" -auto-approve
 
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="username=$(whoami)" -auto-approve
