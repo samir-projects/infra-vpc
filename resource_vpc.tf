@@ -4,6 +4,7 @@ locals {
     private_subnet = "vpc-${var.username}-privatesubnet"
     internet_gateway= "igw-${var.username}"
     route_table = "rt-${var.username}"
+    security_groups= "SSHSG-${var.username}"
 }
 resource "aws_vpc" "main" {
   cidr_block       = var.cidr_block
@@ -56,4 +57,40 @@ resource "aws_route_table" "route" {
 resource "aws_route_table_association" "public_assoc" {
   subnet_id      = aws_subnet.public-subnet.id
   route_table_id = aws_route_table.route.id
+}
+
+resource "aws_security_group" "test_sg" {
+  name   = local.security_groups
+  vpc_id = aws_vpc.main.id
+  description = "Allow SSH access to the host"
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol    = -1
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = local.security_groups
+  }
+}
+resource "aws_instance" "test-instance" {
+  ami           = "ami-06c8f2ec674c67112"
+  instance_type = "t2.micro"
+  subnet_id = aws_subnet.public-subnet.id
+  associate_public_ip_address = true
+  key_name = "demokeypair"
+  security_groups = [aws_security_group.test_sg.id]
+
+  tags = {
+    Name = "Dockerinstance"
+  }
 }
