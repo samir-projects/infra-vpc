@@ -91,6 +91,6 @@ resource "aws_instance" "test-instance" {
   security_groups = [aws_security_group.test_sg.id]
 
   tags = {
-    Name = "TestInstance"
+    Name = "Dockerinstance"
   }
 }
