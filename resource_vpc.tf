@@ -1,11 +1,14 @@
 locals {
-    vpc_name = "vpc-${var.username}"
-    public_subnet  = "vpc-${var.username}-publicsubnet"
-    private_subnet = "vpc-${var.username}-privatesubnet"
-    internet_gateway= "igw-${var.username}"
-    route_table = "rt-${var.username}"
-    security_groups= "SSHSG-${var.username}"
+  vpc_name         = "vpc-${var.username}"
+  public_subnet1   = "vpc-${var.username}-publicsubnet1"
+  public_subnet2   = "vpc-${var.username}-publicsubnet2"
+  private_subnet1  = "vpc-${var.username}-privatesubnet1"
+  private_subnet2  = "vpc-${var.username}-privatesubnet2"
+  internet_gateway = "igw-${var.username}"
+  route_table      = "rt-${var.username}"
+  security_groups  = "SSHSG-${var.username}"
 }
+
 resource "aws_vpc" "main" {
   cidr_block       = var.cidr_block
   instance_tenancy = "default"
@@ -15,23 +18,18 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_subnet" "public-subnet" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = local.public_subnet
-  }
+resource "aws_subnet" "public-subnets" {
+  count             = length(var.subnet_cidrs_public)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.subnet_cidrs_public[count.index]
+  availability_zone = var.availability_zones[count.index]
 }
 
-resource "aws_subnet" "private-subnet" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.2.0/24"
-
-  tags = {
-    Name = local.private_subnet
-  }
+resource "aws_subnet" "private-subnets" {
+  count             = length(var.subnet_cidrs_private)
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.subnet_cidrs_private[count.index]
+  availability_zone = var.availability_zones[count.index]
 }
 
 resource "aws_internet_gateway" "gw" {
@@ -55,13 +53,14 @@ resource "aws_route_table" "route" {
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.public-subnet.id
+  count          = length(var.subnet_cidrs_public)
+  subnet_id      = element(aws_subnet.public-subnets.*.id, count.index)
   route_table_id = aws_route_table.route.id
 }
 
 resource "aws_security_group" "test_sg" {
-  name   = local.security_groups
-  vpc_id = aws_vpc.main.id
+  name        = local.security_groups
+  vpc_id      = aws_vpc.main.id
   description = "Allow SSH access to the host"
 
   ingress {
@@ -80,17 +79,5 @@ resource "aws_security_group" "test_sg" {
 
   tags = {
     Name = local.security_groups
-  }
-}
-resource "aws_instance" "test-instance" {
-  ami           = "ami-06c8f2ec674c67112"
-  instance_type = "t2.micro"
-  subnet_id = aws_subnet.public-subnet.id
-  associate_public_ip_address = true
-  key_name = "demokeypair"
-  security_groups = [aws_security_group.test_sg.id]
-
-  tags = {
-    Name = "Dockerinstance"
   }
 }

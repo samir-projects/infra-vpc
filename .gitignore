@@ -1,0 +1,23 @@
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override_*.tf
+*-override.tf
+
+# Credential and sensitive files
+*.tfvars
+*.tfvars.json
+*.env
+*.pem
+*.key
+credentials.json
+secrets.yaml
+id_rsa*
+.aws/credentials
+.ssh/
+kubectl*
