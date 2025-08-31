@@ -41,7 +41,7 @@ jobs:
         run: terraform plan -var="username=smr"
 
       - name: Terraform Apply
-        run: terraform apply -var="username=$(whoami)" -auto-approve
+        run: terraform apply -var="username=smr" -auto-approve
 
       - name: Terraform Destroy
-        run: terraform destroy -var="username=$(whoami)" -auto-approve 
+        run: terraform destroy -var="username=smr" -auto-approve
